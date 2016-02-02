@@ -287,9 +287,9 @@ Don't do these:
 
 # Links
 
-- This scheme guides is very good.  Here's one:
+- The scheme guide is very good:
   http://community.schemewiki.org/?scheme-style
-- A popular Clojure style guide does discuss semantics
+- A popular Clojure style guide does discuss semantics:
   https://github.com/bbatsov/clojure-style-guide/blob/master/README.md
 
 # Authors
