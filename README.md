@@ -30,14 +30,13 @@ function starts, has a single `if` expression, and the function ends
 on the last line.  When the writer gets this wrong it is very easy for
 the reader to draw the wrong conclusion about how the code works.
 
-Therefor, the writer's job is to make sure that the code is easy to
+Therefore, the writer's job is to make sure that the code is easy to
 read and structured in the way that the reader expects.
 
 This guide will focus on how to structure and format code so it is
 easy to read.  It will not get into the semantics of Clojure and tell
 you when to use `seq`.  Instead it will focus on what column to start
-code and how to write comments.  Except as noted below, use your
-judgment on when to add line breaks.
+code, when to add line breaks, and how to write comments.
 
 ## Bracket matching
 
@@ -62,8 +61,9 @@ Let's write our own `map` function called `xmap`:
          (cons (f x) (xmap f xs)))))))
 ```
 
-Notice how the indentation tells the story: the two-line `let` binding
-followed by the body of the `let`.
+Notice how the it's the indentation and not the brackets that tell the
+the story: how the final `let` block is contained within the `when`
+block and the closing parens are all on the same final line.
 
 There is an important exception that is often seen.  When a sequence
 of items is written in code, the final closing brackets can be put on
@@ -87,9 +87,9 @@ their own line:
 ## Indentation
 
 Clojure indenting is very simple.  It's so simple that you might be
-tempted to make your code more readable by adding some extra spaces to
-help out the reader.  Resist this urge.  Readability will come by
-indenting your code as everyone else does.
+tempted to make your code more readable by adding some extra
+indentation to help out the reader.  Resist this urge.  Readability
+will come by indenting your code as everyone else does.
 
 ### Indent expressions equally
 
@@ -125,7 +125,7 @@ evaluated in order, such as `let`, `do`, `defn`, or `fn`, we will call
 _block expressions_.  Block expressions have the block portion
 indented two spaces.  Like so:
 
-```
+``` clojure
 (defn add1 [x]
   (+ 1 x))
 
@@ -134,8 +134,8 @@ indented two spaces.  Like so:
 
 (let [a 1
       b "two"]
-  (println "a => " a)
-  (println "b => " b))
+  (println "a =>" a)
+  (println "b =>" b))
 ```
 
 ### Exceptions
@@ -161,6 +161,27 @@ by itself.  As one of the Scheme guides says:
      (range)
      [:a :b :c :d :e])
 
+```
+
+There are exceptions to this line break rule.  By far the most common
+exceptions are for expressions where the arguments are grouped by
+pairs (or more).  Literal maps, `cond`-like expressions, and
+`let`-like bindings are good examples:
+
+``` clojure
+{:algeria "Algiers"
+ :bulgaria "Sofia"
+ :cambodia "Phnom Penh"}
+
+(cond
+  (< x 0) "Negative"
+  (> x 0) "Positive"
+  :else "Zero")
+
+(let [a 1
+      ^Integer b (my-func)
+      [x y :as point] [88 99]]
+  ...)
 ```
 
 ## Comments
@@ -253,7 +274,7 @@ Example:
   (foo in))
 ```
 
-# Examples
+# Formatting Examples
 
 A few examples:
 
@@ -261,9 +282,9 @@ A few examples:
 
 ``` clojure
 (cond
- (< x 0) "negative"
- (> x 0) "positive"
- :else "zero")
+ (< x 0) "Negative"
+ (> x 0) "Positive"
+ :else "Zero")
 ```
 
 ## Bad
