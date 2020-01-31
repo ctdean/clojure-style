@@ -311,7 +311,7 @@ Don't do these:
 - The scheme guide is very good:
   http://community.schemewiki.org/?scheme-style
 - A popular Clojure style guide does discuss semantics:
-  https://github.com/bbatsov/clojure-style-guide/blob/master/README.md
+  https://github.com/bbatsov/clojure-style-guide/blob/master/README.adoc
 
 # Authors
 
