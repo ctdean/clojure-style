@@ -38,6 +38,9 @@ easy to read.  It will not get into the semantics of Clojure and tell
 you when to use `seq`.  Instead it will focus on what column to start
 code, when to add line breaks, and how to write comments.
 
+This is also a good article
+https://metaredux.com/posts/2020/12/06/semantic-clojure-formatting.html
+
 ## Bracket matching
 
 Brackets match up.  A starting open paren will have a closing paren.
@@ -54,34 +57,29 @@ Let's write our own `map` function called `xmap`:
 ``` clojure
 (defn xmap [f coll]
   (lazy-seq
-   (let [s (seq coll)]
-     (when s
-       (let [x (first s)
-             xs (rest s)]
-         (cons (f x) (xmap f xs)))))))
+    (let [s (seq coll)]
+      (when s
+        (let [x (first s)
+              xs (rest s)]
+          (cons (f x) (xmap f xs)))))))
 ```
 
-Notice how the it's the indentation and not the brackets that tell the
-the story: how the final `let` block is contained within the `when`
+Notice how it's the indentation and not the brackets that tell the
+story: how the final `let` block is contained within the `when`
 block and the closing parens are all on the same final line.
 
-There is an important exception that is often seen.  When a sequence
-of items is written in code, the final closing brackets can be put on
-their own line:
-
+There is an important exception that is often seen.  When a long
+sequence of items is written in code, the final closing brackets can
+be put on their own line:
 
 ``` clojure
-  :dependencies [
-                 [cheshire "5.5.0"]
-                 [clj-time "0.11.0"]
-                 [com.cemerick/url "0.1.1"]
-                 [ctdean/iter "0.10.1"]
-                 [http-kit "2.1.19"]
-                 [org.clojure/clojure "1.7.0"]
-                 [org.clojure/java.jdbc "0.4.2"]
-                 [org.clojure/tools.logging "0.3.1"]
-                 [org.slf4j/slf4j-log4j12 "1.7.13"]
-                 ]
+(:require
+ [cheshire.core :as json]
+ [clj-time "0.11.0"]
+ [com.cemerick/url "0.1.1"]
+ [org.clojure/clojure "1.7.0"]
+ [org.clojure/tools.logging "0.3.1"]
+ )
 ```
 
 ## Indentation
@@ -91,12 +89,13 @@ tempted to make your code more readable by adding some extra
 indentation to help out the reader.  Resist this urge.  Readability
 will come by indenting your code as everyone else does.
 
-### Indent expressions equally
+There are two categories of forms: regular forms and block forms.
 
-This is the basic rule.  Expressions are indented the same amount so
-that each expression lines up.  They line up either with the first
-argument to the enclosing expression or by one space if the first
-argument is on a line by itself.  Like so:
+### Indent regular expressions: wide formatting
+
+When the first argument appears on the same line as the operator,
+we call this _wide formatting_.  Align all subsequent arguments
+under the first argument:
 
 ``` clojure
 (print "Algeria"
@@ -108,7 +107,11 @@ argument is on a line by itself.  Like so:
        "Gambia")
 ```
 
-and
+### Indent regular expressions: narrow formatting
+
+When the first argument is on its own line (the operator stands
+alone), we call this _narrow formatting_.  Indent all arguments by
+one space from the opening parenthesis:
 
 ``` clojure
 (print
@@ -121,9 +124,9 @@ and
 ### Indent block expressions
 
 Expressions that have a body argument where the sub-expressions are
-evaluated in order, such as `let`, `do`, `defn`, or `fn`, we will call
-_block expressions_.  Block expressions have the block portion
-indented two spaces.  Like so:
+evaluated in order, such as `let`, `do`, `defn`, `when`, or `fn`, we
+will call _block expressions_.  Block expressions have the block
+portion indented two spaces from the opening parenthesis:
 
 ``` clojure
 (defn add1 [x]
@@ -138,17 +141,53 @@ indented two spaces.  Like so:
   (println "b =>" b))
 ```
 
-### Exceptions
+### `if` is not a block form
 
-There are a few popular exceptions to these rules (for example, the
-`extend` form), but we're not going to talk about those forms.
+Do not treat `if` as a block form.  The condition, then expression,
+and else expression are peer arguments.  Use the same wide or narrow
+rules as any other regular form:
+
+``` clojure
+;; Wide: peers align under the condition
+(if (< n 1)
+    1
+    (* n (factorial (dec n))))
+
+;; Narrow: +1 from opening paren
+(if
+ (< n 1)
+ 1
+ (* n (factorial (dec n))))
+```
+
+The same applies to `if-not`, `cond`, `condp`, and `case`.
+
+### Collection literals
+
+Vectors, maps, sets, and anonymous function literals align elements
+under the first element.  Sets (`#{`) and anonymous functions (`#(`)
+account for their 2-character opening delimiter:
+
+``` clojure
+[1
+ 2
+ 3]
+
+{:a 1
+ :b 2
+ :c 3}
+
+#{:x
+  :y
+  :z}
+```
 
 ## Line breaks between expressions
 
 Put all sub-expressions on one line, or each sub-expression on a line
 by itself.  As one of the Scheme guides says:
 
-> Break for one - break for all.
+> Break for one, break for all.
 
 ``` clojure
 (print :a :b :c)
@@ -160,7 +199,16 @@ by itself.  As one of the Scheme guides says:
 (map vector
      (range)
      [:a :b :c :d :e])
+```
 
+This rule cares about where an argument _starts_, not how many lines
+it spans.  A multi-line argument that starts on the current line
+does not force other arguments onto their own lines:
+
+``` clojure
+(println "Here is the data" {:algeria 100
+                             :bulgaria 200
+                             :cambodia 300})
 ```
 
 There are exceptions to this line break rule.  By far the most common
@@ -178,10 +226,33 @@ pairs (or more).  Literal maps, `cond`-like expressions, and
   (> x 0) "Positive"
   :else "Zero")
 
+(cond (< x 0) "Negative"
+      (> x 0) "Positive"
+      :else "Zero")
+
 (let [a 1
       ^Integer b (my-func)
       [x y :as point] [88 99]]
   ...)
+```
+
+Both the wide and narrow forms of `cond` are acceptable.
+
+## Binding forms
+
+In binding forms such as `let`, `loop`, and `doseq`, each binding
+value must be on the same line as its name:
+
+``` clojure
+;; Good
+(let [x 1
+      y (+ x 1)]
+  body)
+
+;; Bad: value on next line
+(let [x
+      1]
+  body)
 ```
 
 ## Comments
@@ -199,7 +270,7 @@ A single semicolon comments a single line of code.  It starts on the
 same line as the code:
 
 ``` clojure
-(defn max [x y]
+(defn max-val [x y]
   (if (> x y)                           ; If x is bigger
       x                                 ; Return it
       y))                               ; Otherwise return y
@@ -282,9 +353,9 @@ A few examples:
 
 ``` clojure
 (cond
- (< x 0) "Negative"
- (> x 0) "Positive"
- :else "Zero")
+  (< x 0) "Negative"
+  (> x 0) "Positive"
+  :else "Zero")
 ```
 
 ## Bad
@@ -298,12 +369,12 @@ Don't do these:
 
 ;; Extra indentation
 (cond
- (< x 0)
-   "negative"
- (> x 0)
-   "positive"
- :else
-   "zero")
+  (< x 0)
+    "negative"
+  (> x 0)
+    "positive"
+  :else
+    "zero")
 ```
 
 # Links
